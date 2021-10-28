@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from typing import List
 
 from database import get_db
 from . import crud
@@ -8,11 +9,22 @@ from .schemas import RestaurantCreate, Restaurant
 router = APIRouter()
 
 
-@router.get("/restaurants/")
+@router.get("/restaurants/", response_model=List[Restaurant])
 def get_restaurants(db: Session = Depends(get_db)):
-    return {"restaurants": []}
+    return crud.get_restaurants(db)
 
 
-@router.post("/restaurant/", response_model=Restaurant)
+@router.get("/restaurants/{restaurant_id}", response_model=Restaurant)
+def get_restaurant(restaurant_id: int, db: Session = Depends(get_db)):
+    db_restaurant = crud.get_restaurant(db, restaurant_id)
+    if not db_restaurant:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+    return db_restaurant
+
+
+@router.post("/restaurants/", response_model=Restaurant)
 def create_restaurant(restaurant: RestaurantCreate, db: Session = Depends(get_db)):
+    db_restaurant = crud.get_restaurant_by_name(db, name=restaurant.name)
+    if db_restaurant:
+        raise HTTPException(status_code=400, detail="Restaurant already registered")
     return crud.create_restaurant(db, restaurant)

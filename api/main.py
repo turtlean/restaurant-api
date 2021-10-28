@@ -12,4 +12,4 @@ app.include_router(router.router, prefix="/api", tags=["restaurant"])
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Simple CRUD API for Restaurants"}

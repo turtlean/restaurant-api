@@ -2,6 +2,11 @@ import sqlalchemy
 
 from config import settings
 
+databases_to_create = [
+    settings.POSTGRES_DB,
+    settings.POSTGRES_DB_TEST,
+]
+
 engine = sqlalchemy.create_engine(
     f"postgresql://{settings.POSTGRES_USER}"
     f":{settings.POSTGRES_PASSWORD}"
@@ -20,7 +25,10 @@ existing_databases = [
     if d[0] != "postgres" and "template" not in d[0]
 ]
 
-if not existing_databases:
-    connection.execute(f"CREATE DATABASE {settings.POSTGRES_DB}")
-    connection.execute("commit")
-    print(f"Created database {settings.POSTGRES_DB}")
+for database in databases_to_create:
+    if database not in existing_databases:
+        connection.execute(f"CREATE DATABASE {database}")
+        connection.execute("commit")
+        print(f"Created database {database}")
+    else:
+        print(f"Database {database} already exists")
