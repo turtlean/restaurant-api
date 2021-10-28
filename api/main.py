@@ -21,4 +21,5 @@ async def root():
         "name": "Restaurants API",
         "description": "Simple CRUD API for Restaurants",
         "version": "1.0.0",
+        "docs": "/docs",
     }
