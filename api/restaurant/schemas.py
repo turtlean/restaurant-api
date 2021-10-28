@@ -16,7 +16,7 @@ class Restaurant(RestaurantBase):
 
 
 class RestaurantUpdate(RestaurantBase):
-    id: int
+    pass
 
 
 class RestaurantCreate(RestaurantBase):

@@ -28,7 +28,7 @@ def test_create_restaurant(setup):
     assert response_json["name"] == "New restaurant"
 
 
-def test_get_error_when_restaurant_already_registered(setup):
+def test_get_bad_request_when_creating_and_restaurant_is_already_registered(setup):
     data = {"name": "New restaurant"}
     create_restaurant(setup, schemas.RestaurantCreate(**data))
 
@@ -49,7 +49,57 @@ def test_get_restaurant(setup):
     )
 
 
-def test_get_error_when_restaurant_is_not_registered(setup):
+def test_get_not_found_when_restaurant_is_not_registered(setup):
     response = setup["app"].get(f"/api/restaurants/1")
+
+    assert response.status_code == 404
+
+
+def test_update_restaurant(setup):
+    db_restaurant = create_restaurant(
+        setup, schemas.RestaurantCreate(name="Previous name")
+    )
+    data = {"name": "Brand new name"}
+
+    response_json = (
+        setup["app"].put(f"/api/restaurants/{db_restaurant.id}", json=data).json()
+    )
+
+    setup["db"].refresh(db_restaurant)
+    db_restaurants = setup["db"].query(models.Restaurant).all()
+    assert len(db_restaurants) == 1
+    assert (
+        db_restaurants[0].id == db_restaurant.id
+        and db_restaurants[0].name == "Brand new name"
+    )
+    assert (
+        response_json["id"] == db_restaurant.id
+        and response_json["name"] == "Brand new name"
+    )
+
+
+def test_get_not_found_when_updating_and_restaurant_is_not_registered(setup):
+    response = setup["app"].put(f"/api/restaurants/1", json={"name": "Brand new name"})
+
+    assert response.status_code == 404
+
+
+def test_delete_restaurant(setup):
+    db_restaurant = create_restaurant(
+        setup, schemas.RestaurantCreate(name="Tasty food")
+    )
+
+    response_json = setup["app"].delete(f"/api/restaurants/{db_restaurant.id}").json()
+
+    db_restaurants = setup["db"].query(models.Restaurant).all()
+    assert len(db_restaurants) == 0
+    assert (
+        response_json["id"] == db_restaurant.id
+        and response_json["name"] == db_restaurant.name
+    )
+
+
+def test_get_not_found_when_deleting_and_restaurant_is_not_registered(setup):
+    response = setup["app"].delete(f"/api/restaurants/1")
 
     assert response.status_code == 404

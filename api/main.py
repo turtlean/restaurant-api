@@ -7,9 +7,18 @@ app = FastAPI()
 
 models.BaseModel.metadata.create_all(bind=engine)
 
-app.include_router(router.router, prefix="/api", tags=["restaurant"])
+app.include_router(router.router, prefix="/api", tags=["Restaurants"])
 
 
-@app.get("/")
+@app.get(
+    "/",
+    name="Info",
+    description="Basic info about **Restaurants API**",
+    tags=["Root"],
+)
 async def root():
-    return {"message": "Simple CRUD API for Restaurants"}
+    return {
+        "name": "Restaurants API",
+        "description": "Simple CRUD API for Restaurants",
+        "version": "1.0.0",
+    }
